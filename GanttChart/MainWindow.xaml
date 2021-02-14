@@ -6,10 +6,18 @@
         xmlns:local="clr-namespace:GanttChart"
         xmlns:Component="clr-namespace:GanttChart.Component" x:Class="GanttChart.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" ContentRendered="Window_ContentRendered">
+        Title="MainWindow" Height="450" Width="800" ContentRendered="Window_ContentRendered" Loaded="Window_Loaded" SizeChanged="Window_SizeChanged" Closing="Window_Closing">
     <Grid>
 
-        <Component:GanttChartView x:Name="Gantt" Margin="10"/>
+        <Component:GanttChartView x:Name="Gantt" Margin="10,102,10,10"/>
+        <Menu Height="26" Margin="0,2,0,0" VerticalAlignment="Top">
+            <MenuItem Header="Control" Height="26" Width="67">
+                <MenuItem x:Name="AddTaskMenu" Header="タスクの追加" HorizontalAlignment="Left" Height="26" Width="140" Click="AddTaskMenu_Click"/>
+            </MenuItem>
+            <MenuItem x:Name="SettingMenu" Header="Setting">
+                <MenuItem x:Name="TagMenuItem" Header="Tags" Click="TagMenuItem_Click"/>
+            </MenuItem>
+        </Menu>
 
     </Grid>
 </Window>

@@ -1,0 +1,22 @@
+﻿<UserControl x:Class="GanttChart.Component.TagView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GanttChart.Component"
+             mc:Ignorable="d" Height="49" Width="Auto">
+    <StackPanel Width="Auto" Height="53" Orientation="Horizontal">
+        <CheckBox x:Name="Selection" Content="" Margin="20,19,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="19"/>
+        <Grid Width="Auto">
+            <Label x:Name="DisplayLabel" Content="test" Margin="0,10" Width="Auto" HorizontalAlignment="Left"/>
+            <TextBox x:Name="EditTextBox" Margin="0,10" Visibility="Hidden" LostFocus="EditTextBox_LostFocus" Text="test" Width="Auto" HorizontalAlignment="Left"/>
+        </Grid>
+        <Menu Margin="10,17,0,12" HorizontalAlignment="Left" Width="30">
+            <MenuItem x:Name="EditMenu" Header="・・・" Height="23" Width="Auto" Click="EditMenu_Click" HorizontalContentAlignment="Right">
+                <MenuItem Header="Edit" Click="EditMenu_Click"/>
+                <MenuItem x:Name="Delete" Header=" Delete" Click="Delete_Click"/>
+            </MenuItem>
+        </Menu>
+
+    </StackPanel>
+</UserControl>

@@ -8,30 +8,30 @@ namespace GanttChart.Data
 {
     public class CalendarRange
     {
-        private DateTime RangeStart;
+        private DateTime? RangeStart;
 
-        private DateTime RangeEnd;
+        private DateTime? RangeEnd;
 
         public delegate void EventHandler();
 
         public EventHandler RangeChanged;
 
-        public DateTime Start
+        public DateTime? Start
         {
             get => RangeStart;
             set
             {
-                RangeStart = value.Date;
+                RangeStart = value?.Date;
                 if (RangeChanged != null) { RangeChanged(); }
             }
         }
 
-        public DateTime End 
+        public DateTime? End 
         {
             get => RangeEnd;
             set
             {
-                RangeEnd = value.Date;
+                RangeEnd = value?.Date;
                 if (RangeChanged != null) { RangeChanged(); }
             }
         }

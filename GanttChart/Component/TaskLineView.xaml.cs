@@ -55,6 +55,8 @@ namespace GanttChart.Component
             } 
         }
 
+        public bool NoSelectedRange { get => Range.Start == null || Range.End == null; }
+
         public List<DateCell> DateCells { get => Calendar.Children.Cast<DateCell>().ToList() ; }
 
 
@@ -83,7 +85,7 @@ namespace GanttChart.Component
         /// </summary>
         /// <param name="taskInfo"></param>
 
-        public TaskLineView(TaskInfo taskInfo ,DateTime rangeStart, DateTime rangeEnd, bool isHeader)
+        public TaskLineView(TaskInfo taskInfo ,DateTime? rangeStart, DateTime? rangeEnd, bool isHeader)
         {
             InitializeComponent();
 
@@ -101,6 +103,11 @@ namespace GanttChart.Component
             UpdateEventReason = UpdateEventReasons.Loaded;
 
             DrawCalendar();
+
+            if (TaskInfo != null)
+            { 
+                TaskTitle.Content = TaskInfo.Title;
+            }
         }
 
 
@@ -115,7 +122,7 @@ namespace GanttChart.Component
             {
                 double left = GetDateCell(TaskInfo.Start.Value).GetLeftBasedOn(UserControlGrid);
                 TermBar.Left = left;
-                TermBar.Width = GetDateCell(TaskInfo.End.Value).GetRightBasedOn(UserControlGrid) - left;
+                TermBar.Width = GetDateCell(TaskInfo.End.Value).GetRightBasedOn(UserControlGrid) - left - 1.5;
             }
         }
 
@@ -124,7 +131,9 @@ namespace GanttChart.Component
         {
             Calendar.Children.Clear();
 
-            Util.GetDateList(Range.Start, Range.End)
+            if (NoSelectedRange) { return; }
+
+            Util.GetDateList(Range.Start.Value, Range.End.Value)
                 .ForEach(date =>
                 {
                     var cell = new DateCell(date, IsHeader) { BaseContainer = UserControlGrid };
@@ -163,6 +172,14 @@ namespace GanttChart.Component
         {
             return DateCells.FirstOrDefault(cell => cell.Date == date.Date);
         }
+
+        private DateCell GetNextCell(DateCell basisCell, int index)
+        {
+            var n = DateCells.IndexOf(basisCell);
+            return DateCells[n + index];
+        }
+
+        #region<Thumb Move>
 
         /// <summary>
         /// ドラッグ開始
@@ -209,25 +226,15 @@ namespace GanttChart.Component
 
             var cell = GetDateCell(TermBar.Right);
             if(cell == null) { return; }
+            
+            TermBar.Width = cell.Right - TermBar.Left - 1.5;
 
-            var direction = DragStartWidth == TermBar.Width ? Direction.None
-                : DragStartWidth < TermBar.Width ? Direction.Right : Direction.Left;
-
-            switch (direction)
-            {
-                case Direction.None:
-                    TermBar.Width = DragStartWidth;
-                    break;
-
-                case Direction.Right:
-                    TermBar.Width = cell.Right - TermBar.Left;
-                    break;
-
-                case Direction.Left:
-                    TermBar.Width = cell.Left - TermBar.Left;
-                    break;
-            }
+            TaskInfo.End = cell.Date;
         }
+
+        #endregion<Thumb Move>
+
+        #region<TermBar Move>
 
         private void TermBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -238,6 +245,8 @@ namespace GanttChart.Component
             InitCell = GetDateCell(TermBar.Left);
             TermBar.CaptureMouse();
         }
+
+        
 
         private void TermBar_MouseMove(object sender, MouseEventArgs e)
         {
@@ -272,22 +281,14 @@ namespace GanttChart.Component
 
             var cell = GetDateCell(TermBar.Left);
 
-            var direction = InitCell == cell ? Direction.None :
-                InitPoint.X < StartPoint.X ? Direction.Right : Direction.Left;
+            TermBar.Left = cell.GetLeftBasedOn(UserControlGrid);
 
-            switch (direction)
-            {
-                case Direction.None:
-                case Direction.Left:
-                    TermBar.Left = cell.GetLeftBasedOn(UserControlGrid);
-                    break;
-
-                case Direction.Right:
-                    TermBar.Left = cell.GetRightBasedOn(UserControlGrid);
-                    break;
-            }
-            
+            var term = (TaskInfo.End.Value - TaskInfo.Start.Value).Days;
+            TaskInfo.Start = cell.Date;
+            TaskInfo.End = GetNextCell(cell, term).Date;
         }
+
+        #endregion<TermBar Move>
 
         private void UserControl_LayoutUpdated(object sender, EventArgs e)
         {
@@ -300,6 +301,16 @@ namespace GanttChart.Component
             }
 
             UpdateEventReason = UpdateEventReasons.None;
+        }
+
+        private void TaskTitle_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            TaskEditWindow taskEditWindow = new TaskEditWindow(TaskInfo, false);
+            if (taskEditWindow.ShowDialog() == true)
+            {
+                TaskInfo = taskEditWindow.TaskInfo;
+                MoveTermBar();
+            }
         }
     }
 }

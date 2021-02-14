@@ -10,7 +10,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
+using GanttChart.Class;
 using GanttChart.Data;
 
 namespace GanttChart.Component
@@ -21,6 +21,12 @@ namespace GanttChart.Component
     public partial class GanttChartView : UserControl
     {
         public List<TaskInfo> TaskInfos = new List<TaskInfo>();
+
+        private AppDataManager AppDataManager;
+
+        public delegate void RangeSelectedEventHandler(object sender, RangeSelectedEventArgs e);
+
+        public event RangeSelectedEventHandler RangeSelected;
 
         public List<TaskInfo> Tasks 
         {
@@ -41,16 +47,18 @@ namespace GanttChart.Component
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            TaskInfo dummy = new TaskInfo { Start = DateTime.Now.AddDays(-3), End = DateTime.Now.AddDays(7) };
-            Tasks = new List<TaskInfo> { dummy, dummy, dummy, dummy };
-
             ShowHeader();
 
             ShowTasks();
 
             MoveTerm();
 
+            if (AppDataManager.IsInitialized)
+            { 
+                AppDataManager = AppDataManager.Instance;
+            }
         }
+
 
         private void ShowHeader() 
         {
@@ -100,14 +108,32 @@ namespace GanttChart.Component
             MoveTerm();
         }
 
+        private RangeSelectedEventArgs CreateEventArgs()
+        {
+            return new RangeSelectedEventArgs(RangeStart.SelectedDate, RangeEnd.SelectedDate);
+        }
+
         private void RangeStart_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
             ChangeCalendarRange();
+
+
+            if (RangeSelected != null)
+            {
+                RangeSelected(this, CreateEventArgs());
+            }
+
         }
 
         private void RangeEnd_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
             ChangeCalendarRange();
+
+
+            if (RangeSelected != null)
+            {
+                RangeSelected(this, CreateEventArgs());
+            }
         }
     }
 }
