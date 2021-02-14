@@ -25,7 +25,7 @@ namespace GanttChart.Component
         private CalendarRange Range;
 
         private bool IsHeader;
-        
+
         private bool IsDragging { get; set; }
 
         private Point StartPoint { get; set; }
@@ -36,7 +36,10 @@ namespace GanttChart.Component
 
         private Thickness Position;
 
+        private bool ExcludeHoliday;
+
         private enum UpdateEventReasons { None , Drag , ChangeRange , Loaded }
+
 
         private enum Direction { Right , Left , None}
 
@@ -62,30 +65,48 @@ namespace GanttChart.Component
 
         /// <summary>
         /// コンストラクタ１
+        /// UserControl用　実際には未使用
         /// </summary>
-        public TaskLineView() : this(null, DateTime.Now, DateTime.Now.AddDays(7), false) { }
+        public TaskLineView() : this(
+            taskInfo: null, 
+            rangeStart: DateTime.Now, 
+            rangeEnd: DateTime.Now.AddDays(7), 
+            isHeader: false, 
+            excludeHoliday: false) { }
 
         /// <summary>
         /// コンストラクタ２
+        /// タスク用
         /// </summary>
         /// <param name="task"></param>
         /// <param name="start"></param>
         /// <param name="end"></param>
-        public TaskLineView(TaskInfo task, DateTime start, DateTime end) : this(task, start, end, false) { }
+        public TaskLineView(TaskInfo task, DateTime start, DateTime end ,bool excludeHoliday) : this(
+            taskInfo: task, 
+            rangeStart: start, 
+            rangeEnd: end, 
+            isHeader: false, 
+            excludeHoliday: excludeHoliday) { }
 
         /// <summary>
-        /// ヘッダーモードコンストラクタ
+        /// ヘッダーモード用
         /// </summary>
         /// <param name="start"></param>
         /// <param name="end"></param>
-        public TaskLineView(DateTime start, DateTime end) : this(null, start, end, true) { }
+        /// <param name="excludeHoliday"></param>
+        public TaskLineView(DateTime start, DateTime end, bool excludeHoliday) : this(
+            taskInfo: null,
+            rangeStart: start,
+            rangeEnd: end,
+            isHeader: true,
+            excludeHoliday: excludeHoliday) { }
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="taskInfo"></param>
 
-        public TaskLineView(TaskInfo taskInfo ,DateTime? rangeStart, DateTime? rangeEnd, bool isHeader)
+        public TaskLineView(TaskInfo taskInfo ,DateTime? rangeStart, DateTime? rangeEnd, bool isHeader, bool excludeHoliday)
         {
             InitializeComponent();
 
@@ -94,6 +115,7 @@ namespace GanttChart.Component
             Range.RangeChanged += RangeChanged;
             IsHeaderMode = isHeader;
             TermBar.BasicParent = UserControlGrid;
+            ExcludeHoliday = excludeHoliday;
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
@@ -133,7 +155,7 @@ namespace GanttChart.Component
 
             if (NoSelectedRange) { return; }
 
-            Util.GetDateList(Range.Start.Value, Range.End.Value)
+            Util.GetDateList(Range.Start.Value, Range.End.Value, ExcludeHoliday)
                 .ForEach(date =>
                 {
                     var cell = new DateCell(date, IsHeader) { BaseContainer = UserControlGrid };

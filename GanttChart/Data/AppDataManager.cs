@@ -93,6 +93,8 @@ namespace GanttChart.Data
 
         public DateTime? RangeEnd { get => AppData.RangeEnd; set => AppData.RangeEnd = value; }
 
+        public bool ExcludeHoliday { get => AppData.ExcludeHoliday; set => AppData.ExcludeHoliday = value; }
+
         public void Save()
         {
             var json = JsonSerializer.Serialize(AppData);

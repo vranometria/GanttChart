@@ -12,6 +12,11 @@ namespace GanttChart.Data
 
         public double WindowHeight { get; set; } = AppDataManager.DEFAULT_HEIGHT;
 
+        /// <summary>
+        /// 休日を除いた表示かどうか
+        /// </summary>
+        public bool ExcludeHoliday { get; set; }
+
 
         public DateTime? RangeStart { get; set; }
 

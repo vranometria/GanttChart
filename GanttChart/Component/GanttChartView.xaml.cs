@@ -43,20 +43,22 @@ namespace GanttChart.Component
         public GanttChartView()
         {
             InitializeComponent();
+
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            if (AppDataManager.IsInitialized)
+            { 
+                AppDataManager = AppDataManager.Instance;
+                ExcludeHoliday.IsChecked = AppDataManager.ExcludeHoliday;
+            }
+
             ShowHeader();
 
             ShowTasks();
 
             MoveTerm();
-
-            if (AppDataManager.IsInitialized)
-            { 
-                AppDataManager = AppDataManager.Instance;
-            }
         }
 
 
@@ -64,7 +66,11 @@ namespace GanttChart.Component
         {
             if (NoSelectedRange) { return; }
 
-            var header = new TaskLineView(RangeStart.SelectedDate.Value, RangeEnd.SelectedDate.Value);
+            var header = new TaskLineView(
+                start: RangeStart.SelectedDate.Value, 
+                end: RangeEnd.SelectedDate.Value, 
+                excludeHoliday: ExcludeHoliday.IsChecked==true
+                );
             HeaderScrollViewer.Content = header;
 
         }
@@ -80,8 +86,13 @@ namespace GanttChart.Component
             DateTime start = RangeStart.SelectedDate.Value;
             DateTime end = RangeEnd.SelectedDate.Value;
 
-            Tasks.Where(task => start <= task.Start && task.Start <= task.End)
-                .Select(task => new TaskLineView(task, start, end))
+            Tasks.Where(task => start <= task.Start && task.End <= task.End && Util.HasTerm(task, ExcludeHoliday.IsChecked == true))
+                .Select(task => new TaskLineView(
+                    task: task,
+                    start: start,
+                    end: end,
+                    excludeHoliday: ExcludeHoliday.IsChecked == true)
+                )
                 .ToList()
                 .ForEach(taskView => TasksStack.Children.Add(taskView));
         }
@@ -134,6 +145,20 @@ namespace GanttChart.Component
             {
                 RangeSelected(this, CreateEventArgs());
             }
+        }
+
+        private void ExcludeHoliday_Checked(object sender, RoutedEventArgs e)
+        {
+            ChangeCalendarRange();
+
+            AppDataManager.ExcludeHoliday = true;
+        }
+
+        private void ExcludeHoliday_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ChangeCalendarRange();
+
+            AppDataManager.ExcludeHoliday = false;
         }
     }
 }
